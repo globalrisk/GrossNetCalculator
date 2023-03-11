@@ -1,0 +1,320 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css" />
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.css"
+          rel="stylesheet" type='text/css'>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        #NetInput{
+            width: 30%;
+        }
+        .NetInputGroup{
+            color: #198754;
+        }
+        .human{
+            color: #198754;
+        }
+    </style>
+</head>
+<body>
+    <form id="defaultForm">
+        <div>
+            <div class="mr-auto mb-2">
+                <label>Nhập lương của bạn: </label>
+                <div class="input-group-text mb-3 NetInputGroup">
+                    <span class="me-2">
+                        <i class="fa fa-money-bill"></i>
+                    </span>
+                    <input id="NetInput" type="text" class="border-dark form-control"  onkeypress="return isNumberKey(event)" />
+                </div>
+                <label>Mức lương đóng bảo hiểm: </label>
+                <div class="input-group-text form-inline mb-3">
+                    <label class="radio-inline">
+                        <input type="radio" name="Insurance" value="default" id="default" checked/> Đóng theo mức lương
+                    </label>
+                    <label class="radio-inline ms-2">
+                        <input type="radio" name="Insurance" value="manual" id="manual" /> Khác:                          
+                    </label>
+                    <input type="text" id="manualWage" class="form-group ms-2"  onkeypress="return isNumberKey(event)" disabled />
+                </div>
+                <label>Vùng: </label>
+                <div class="input-group-text mb-3">
+                    <label class="radio-inline me-3">
+                        <input type="radio" name="DistrictType" value="1" checked /> I
+                    </label>
+                    <label class="radio-inline me-3">
+                        <input type="radio" name="DistrictType" value="2" /> II
+                    </label>
+                    <label class="radio-inline me-3">
+                        <input type="radio" name="DistrictType" value="3" /> III
+                    </label>
+                    <label class="radio-inline me-3">
+                        <input type="radio" name="DistrictType" value="4" /> IV
+                    </label>
+                </div>
+                <label>Số người phụ thuộc: </label>
+                <div class="input-group-text mb-3 human">
+                    <div class="form-inline">
+                        <span class="form-group me-3">
+                            <i class="fa-solid fa-user-group"></i>
+                        </span>
+                        <input type="text" id="peopleDependence" class="form-group" value="0" onkeypress="return isNumberKey(event)" />
+                    </div>
+                </div>
+            </div>
+            <button class="mt-3 me-3 btn btn-success" id="GrossToNet">Gross To Net</button>
+            <button class="mt-3 btn btn-secondary" id="NetToGross">Net To Gross</button>
+            <div class="form-control mt-3" id="Result">
+                
+            </div>
+        </div>
+    </form>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+        $("#GrossToNet").click(function(){
+            let wageAfterInsurance;
+            let personalTaxes;
+            let dependencePeople = $("#peopleDependence").val();
+            let wageSufferTaxes;
+            let wageAfterTaxes;
+            let manualWage = $("#manualWage").val().replaceAll(",", "");
+            let wage = $("#NetInput").val().replaceAll(",","");
+            let typeInsurance = $('input[name="Insurance"]:checked').val();
+            if(typeInsurance == "default")
+            {
+                if(wage <= 29800000)
+                {
+                    wageAfterInsurance = wage * 0.895;
+                }
+                else if(wage <= 93600000)
+                {
+                    wageAfterInsurance = wage - 2384000 - 447000 - wage * 0.01;
+                }
+                else
+                {
+                    wageAfterInsurance = wage - 3767000;
+                }
+            }
+            else
+            {
+                if(manualWage == "")
+                {
+                    manualWage = 0;
+                }
+                if (manualWage <= 29800000) {
+                    wageAfterInsurance = wage - manualWage * 0.105;
+                }
+                else if (manualWage <= 93600000) {
+                    wageAfterInsurance = wage - 2384000 - 447000 - manualWage * 0.01;
+                }
+                else {
+                    wageAfterInsurance = wage - 3767000;
+                }
+            }
+            wageSufferTaxes = wageAfterInsurance - 11000000 - dependencePeople * 4400000;
+            if(wageSufferTaxes < 0)
+            {
+                wageSufferTaxes = 0;
+            }
+            else if(wageSufferTaxes <= 5000000)
+            {
+                wageSufferTaxes = wageSufferTaxes * 0.05;
+            }
+            else if(wageSufferTaxes <= 10000000)
+            {
+                wageSufferTaxes = wageSufferTaxes * 0.1 - 250000;
+            }
+            else if(wageSufferTaxes <= 18000000)
+            {
+                wageSufferTaxes = wageSufferTaxes * 0.15 - 750000;
+            }
+            else if(wageSufferTaxes <= 32000000)
+            {
+                wageSufferTaxes = wageSufferTaxes * 0.2 - 1650000;
+            }
+            else if(wageSufferTaxes <= 52000000)
+            {
+                wageSufferTaxes = wageSufferTaxes * 0.25 - 3250000;
+            }
+            else if(wageSufferTaxes <= 80000000)
+            {
+                wageSufferTaxes = wageSufferTaxes * 0.3 - 5850000;
+            }
+            else
+            {
+                wageSufferTaxes = wageSufferTaxes * 0.35 - 9850000;
+            }
+            wageAfterTaxes = wageAfterInsurance - wageSufferTaxes;
+            if (wageAfterTaxes < 0)
+            {
+                wageAfterTaxes = 0;
+            }
+            wageAfterTaxes = Math.round(wageAfterTaxes);
+            $("#Result").text("Lương của bạn sau bảo hiểm và thuế thu nhập cá nhân là: " + addCommas(wageAfterTaxes));
+        });
+
+        $("#NetToGross").click(function(){
+            let NetWage = $("#NetInput").val().replaceAll(",", "");
+            let NetWageBeforeTaxes;
+            let dependencePeople = $("#peopleDependence").val();
+            let manualWage = $("#manualWage").val().replaceAll(",", "");
+            let typeInsurance = $('input[name="Insurance"]:checked').val();
+            let personalTax;
+            let cummulativeTax;
+            let insuranceTax;
+            let GrossWage;
+            NetWage = parseInt(NetWage);
+            dependencePeople = parseInt(dependencePeople);
+            if(NetWage <= 11000000)
+            {
+                NetWageBeforeTaxes = NetWage;
+            }
+            while(true)
+            {
+                cummulativeTax = 0;
+                personalTax = 0.05;
+                NetWageBeforeTaxes = (NetWage - personalTax * 11000000 - dependencePeople * personalTax * 4400000 - cummulativeTax) / (1 - personalTax);
+                if (NetWageBeforeTaxes - 11000000 - 4400000 * dependencePeople <= 5000000) {
+                    break;
+                }
+                cummulativeTax = 250000;
+                personalTax = 0.1;
+                NetWageBeforeTaxes = (NetWage - personalTax * 11000000 - dependencePeople * personalTax * 4400000 - cummulativeTax) / (1 - personalTax);
+                if (NetWageBeforeTaxes - 11000000 - 4400000 * dependencePeople <= 10000000) {
+                    break;
+                }
+                cummulativeTax = 750000;
+                personalTax = 0.15;
+                NetWageBeforeTaxes = (NetWage - personalTax * 11000000 - dependencePeople * personalTax * 4400000 - cummulativeTax) / (1 - personalTax);
+                if (NetWageBeforeTaxes - 11000000 - 4400000 * dependencePeople <= 18000000) {
+                    break;
+                }
+                cummulativeTax = 1650000;
+                personalTax = 0.2;
+                NetWageBeforeTaxes = (NetWage - personalTax * 11000000 - dependencePeople * personalTax * 4400000 - cummulativeTax) / (1 - personalTax);
+                if (NetWageBeforeTaxes - 11000000 - 4400000 * dependencePeople <= 32000000) {
+                    break;
+                }
+                cummulativeTax = 3250000;
+                personalTax = 0.25;
+                NetWageBeforeTaxes = (NetWage - personalTax * 11000000 - dependencePeople * personalTax * 4400000 - cummulativeTax) / (1 - personalTax);
+                if (NetWageBeforeTaxes - 11000000 - 4400000 * dependencePeople <= 52000000) {
+                    break;
+                }
+                cummulativeTax = 5850000;
+                personalTax = 0.3;
+                NetWageBeforeTaxes = (NetWage - personalTax * 11000000 - dependencePeople * personalTax * 4400000 - cummulativeTax) / (1 - personalTax);
+                if (NetWageBeforeTaxes - 11000000 - 4400000 * dependencePeople <= 80000000) {
+                    break;
+                }
+                cummulativeTax = 9850000;
+                personalTax = 0.35;
+                NetWageBeforeTaxes = (NetWage - personalTax * 11000000 - dependencePeople * personalTax * 4400000 - cummulativeTax) / (1 - personalTax);
+                break;
+
+
+            }
+           
+            
+            if(typeInsurance == "default")
+            {
+                if(NetWageBeforeTaxes <= 29353000)
+                {
+                    GrossWage = NetWageBeforeTaxes/0.895;
+                }
+                else if(NetWageBeforeTaxes <= 89833000)
+                {
+                    GrossWage = (NetWageBeforeTaxes + 2384000 + 447000)/0.99;
+                }
+                else
+                {
+                    GrossWage = NetWageBeforeTaxes + 3767000;
+                }
+            }
+            else
+            {
+                if (manualWage == "") {
+                    manualWage = 0;
+                }
+                if (manualWage <= 29800000) {
+                    GrossWage = NetWageBeforeTaxes + 0.105 * manualWage;
+                }
+                else if (manualWage <= 93600000) {
+                    GrossWage = NetWageBeforeTaxes + 2384000 + 447000 + manualWage * 0.01;
+                }
+                else {
+                    GrossWage = NetWageBeforeTaxes + 3767000;
+                }
+            }
+            GrossWage = Math.round(GrossWage);
+            $("#Result").text("Lương của bạn trước bảo hiểm và thuế thu nhập cá nhân là: " + addCommas(GrossWage));
+        });
+
+        $("#NetInput").on("keyup", function(){
+            let Num = $("#NetInput").val();
+            Num += '';
+            Num = Num.replace(',', ''); Num = Num.replace(',', ''); Num = Num.replace(',', '');
+            Num = Num.replace(',', ''); Num = Num.replace(',', ''); Num = Num.replace(',', '');
+            let x = Num.split('.');
+            let x1 = x[0];
+            let x2 = x.length > 1 ? '.' + x[1] : '';
+            var rgx = /(\d+)(\d{3})/;
+            while (rgx.test(x1))
+                x1 = x1.replace(rgx, '$1' + ',' + '$2');
+            $("#NetInput").val(x1 + x2);
+        })
+
+        $("#manualWage").on("keyup", function () {
+            let Num = $("#manualWage").val();
+            Num += '';
+            Num = Num.replace(',', ''); Num = Num.replace(',', ''); Num = Num.replace(',', '');
+            Num = Num.replace(',', ''); Num = Num.replace(',', ''); Num = Num.replace(',', '');
+            let x = Num.split('.');
+            let x1 = x[0];
+            let x2 = x.length > 1 ? '.' + x[1] : '';
+            var rgx = /(\d+)(\d{3})/;
+            while (rgx.test(x1))
+                x1 = x1.replace(rgx, '$1' + ',' + '$2');
+            $("#manualWage").val(x1 + x2);
+        })
+
+        function addCommas(Num)
+        {
+            Num += '';
+            Num = Num.replace(',', ''); Num = Num.replace(',', ''); Num = Num.replace(',', '');
+            Num = Num.replace(',', ''); Num = Num.replace(',', ''); Num = Num.replace(',', '');
+            let x = Num.split('.');
+            let x1 = x[0];
+            let x2 = x.length > 1 ? '.' + x[1] : '';
+            var rgx = /(\d+)(\d{3})/;
+            while (rgx.test(x1))
+                x1 = x1.replace(rgx, '$1' + ',' + '$2');
+            return x1 + x2;
+        }
+
+        function isNumberKey(evt) {
+            var charCode = (evt.which) ? evt.which : evt.keyCode
+            if (charCode > 31 && (charCode < 48 || charCode > 57))
+                return false;
+            return true;
+        }
+
+        $("#defaultForm").on("submit", function(e)
+        {
+            e.preventDefault();
+        })
+
+        $("#manual").click(function()
+        {
+            $("#manualWage").prop("disabled",false);
+        });
+
+        $("#default").click(function () {
+            $("#manualWage").val('');
+            $("#manualWage").prop("disabled", true);
+        });
+
+    </script>
+</body>
